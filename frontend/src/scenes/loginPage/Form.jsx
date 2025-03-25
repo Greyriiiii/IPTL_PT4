@@ -148,7 +148,7 @@ const Form = () => {
                     Boolean(touched.firstName) && Boolean(errors.firstName)
                   }
                   helperText={touched.firstName && errors.firstName}
-                  sx={{ gridColumn: "span 2" }}
+                  sx={{ gridColumn: "span 4" }}
                 />
                 <Box
                   gridColumn="span 4"

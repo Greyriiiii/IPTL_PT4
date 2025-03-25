@@ -5,28 +5,38 @@ import PostWidget from "./PostWidget";
 
 const PostsWidget = ({ userId, isProfile = false }) => {
   const dispatch = useDispatch();
-  const posts = useSelector((state) => state.posts);
+  const posts = useSelector((state) => state.posts || []);
   const token = useSelector((state) => state.token);
 
   const getPosts = async () => {
-    const response = await fetch("http://localhost:3001/posts", {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await response.json();
-    dispatch(setPosts({ posts: data }));
+    try {
+      const response = await fetch("http://localhost:3001/posts", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      dispatch(setPosts({ posts: Array.isArray(data) ? data : [] }));
+    } catch (error) {
+      console.error("Failed to fetch posts:", error);
+      dispatch(setPosts({ posts: [] }));
+    }
   };
 
   const getUserPosts = async () => {
-    const response = await fetch(
-      `http://localhost:3001/posts/${userId}/posts`,
-      {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    const data = await response.json();
-    dispatch(setPosts({ posts: data }));
+    try {
+      const response = await fetch(
+        `http://localhost:3001/posts/${userId}/posts`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = await response.json();
+      dispatch(setPosts({ posts: Array.isArray(data) ? data : [] }));
+    } catch (error) {
+      console.error("Failed to fetch user posts:", error);
+      dispatch(setPosts({ posts: [] }));
+    }
   };
 
   useEffect(() => {
@@ -35,34 +45,28 @@ const PostsWidget = ({ userId, isProfile = false }) => {
     } else {
       getPosts();
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isProfile, userId]); // Added dependencies
+
+  if (!Array.isArray(posts)) {
+    console.error("Posts is not an array:", posts);
+    return <div>Loading posts...</div>;
+  }
 
   return (
     <>
-      {posts.map(
-        ({
-          _id,
-          userId,
-          firstName,
-          description,
-          picturePath,
-          userPicturePath,
-          likes,
-          comments,
-        }) => (
-          <PostWidget
-            key={_id}
-            postId={_id}
-            postUserId={userId}
-            name={`${firstName}`}
-            description={description}
-            picturePath={picturePath}
-            userPicturePath={userPicturePath}
-            likes={likes}
-            comments={comments}
-          />
-        )
-      )}
+      {posts.map((post) => (
+        <PostWidget
+          key={post._id}
+          postId={post._id}
+          postUserId={post.userId}
+          name={`${post.firstName}`}
+          description={post.description}
+          picturePath={post.picturePath}
+          userPicturePath={post.userPicturePath}
+          likes={post.likes}
+          comments={post.comments}
+        />
+      ))}
     </>
   );
 };
