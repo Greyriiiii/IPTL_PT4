@@ -28,8 +28,17 @@ const UserSchema = new mongoose.Schema(
       default: [],
     },
     viewedProfile: Number,
-    impressions: Number,
+    impressions: Number,googleId: {
+      type: String,
+      unique: true,
+      sparse: true // Allows null for non-Google users
+    },
+    verified: {
+      type: Boolean,
+      default: false
+    }
   },
+  
   { timestamps: true }
 );
 

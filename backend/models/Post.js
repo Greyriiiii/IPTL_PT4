@@ -21,6 +21,10 @@ const postSchema = mongoose.Schema(
       type: Array,
       default: [],
     },
+    shares: { 
+      type: Number, 
+      default: 0 
+    }
   },
   { timestamps: true }
 );

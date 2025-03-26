@@ -6,7 +6,7 @@ import { setFriends } from "state";
 import FlexBetween from "./FlexBetween";
 import UserImage from "./UserImage";
 
-const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
+const Friend = ({ friendId, name, userPicturePath }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { _id } = useSelector((state) => state.user);
@@ -17,7 +17,7 @@ const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
   const primaryLight = palette.primary.light;
   const primaryDark = palette.primary.dark;
   const main = palette.neutral.main;
-  const medium = palette.neutral.medium;
+
 
   const isFriend = friends.find((friend) => friend._id === friendId);
 
@@ -58,9 +58,6 @@ const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
             }}
           >
             {name}
-          </Typography>
-          <Typography color={medium} fontSize="0.75rem">
-            {subtitle}
           </Typography>
         </Box>
       </FlexBetween>

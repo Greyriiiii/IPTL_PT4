@@ -1,4 +1,6 @@
 import User from "../models/User.js";
+// Add at the top with other imports
+import path from "path";
 
 /* READ */
 export const getUser = async (req, res) => {
@@ -59,5 +61,34 @@ export const addRemoveFriend = async (req, res) => {
     res.status(200).json(formattedFriends);
   } catch (err) {
     res.status(404).json({ message: err.message });
+  }
+};
+
+export const updateUserPicture = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Check if user is authorized
+    if (req.user.id !== id) {
+      return res.status(403).json({ message: "Unauthorized to update this profile" });
+    }
+
+    // Check if file was uploaded
+    if (!req.file) {
+      return res.status(400).json({ message: "No image file provided" });
+    }
+
+    const picturePath = req.file.filename;
+    
+    // Update user in database
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { picturePath },
+      { new: true }
+    );
+
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };

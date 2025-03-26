@@ -1,5 +1,5 @@
 {
   "window.zoomLevel": 1,
-  "terminal.integrated.gpuAcceleration": "on",
-  "editor.experimentalGpuAcceleration": "on"
+  "terminal.integrated.gpuAcceleration": "off",
+  "editor.experimentalGpuAcceleration": "off"
 }
