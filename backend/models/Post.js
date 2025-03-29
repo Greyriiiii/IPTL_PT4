@@ -17,14 +17,17 @@ const postSchema = mongoose.Schema(
       type: Map,
       of: Boolean,
     },
-    comments: {
-      type: Array,
-      default: [],
-    },
     shares: { 
       type: Number, 
       default: 0 
-    }
+    },
+    comments: [
+      {
+        userId: { type: String, required: true }, 
+        text: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now }
+      }
+    ],
   },
   { timestamps: true }
 );

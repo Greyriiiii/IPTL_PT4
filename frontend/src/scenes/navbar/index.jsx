@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useState } from "react";
 import {
   Box,
@@ -47,7 +48,7 @@ const Navbar = () => {
         <Typography
           fontWeight="bold"
           fontSize="clamp(1rem, 2rem, 2.25rem)"
-          color="lightblue"
+          color="primary"
           onClick={() => navigate("/home")}
           sx={{
             "&:hover": {
@@ -56,7 +57,7 @@ const Navbar = () => {
             },
           }}
         >
-          Friendzone.
+          FriendZone.
         </Typography>
         {isNonMobileScreens && (
           <FlexBetween
@@ -83,7 +84,11 @@ const Navbar = () => {
               <LightMode sx={{ color: dark, fontSize: "25px" }} />
             )}
           </IconButton>
-          <Message sx={{ fontSize: "25px" }} />
+          <Link to="/messages">
+            <IconButton>
+              <Message sx={{ fontSize: "25px" }} />
+            </IconButton>
+          </Link>
           <Notifications sx={{ fontSize: "25px" }} />
           <Help sx={{ fontSize: "25px" }} />
           <FormControl variant="standard" value={fullName}>
@@ -158,7 +163,11 @@ const Navbar = () => {
                 <LightMode sx={{ color: dark, fontSize: "25px" }} />
               )}
             </IconButton>
-            <Message sx={{ fontSize: "25px" }} />
+            <Link to="/messages">
+              <IconButton>
+                <Message sx={{ fontSize: "25px" }} />
+              </IconButton>
+            </Link>
             <Notifications sx={{ fontSize: "25px" }} />
             <Help sx={{ fontSize: "25px" }} />
             <FormControl variant="standard" value={fullName}>
@@ -182,9 +191,7 @@ const Navbar = () => {
                 <MenuItem value={fullName}>
                   <Typography>{fullName}</Typography>
                 </MenuItem>
-                <MenuItem onClick={() => dispatch(setLogout())}>
-                  Log Out
-                </MenuItem>
+                <MenuItem onClick={() => dispatch(setLogout())}>Log Out</MenuItem>
               </Select>
             </FormControl>
           </FlexBetween>

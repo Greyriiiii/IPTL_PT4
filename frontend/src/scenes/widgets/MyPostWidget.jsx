@@ -96,7 +96,7 @@ const MyPostWidget = ({ picturePath }) => {
                 >
                   <input {...getInputProps()} />
                   {!image ? (
-                    <p>Add Image Here</p>
+                    <p>Add Image or Video Here</p>
                   ) : (
                     <FlexBetween>
                       <Typography>{image.name}</Typography>
@@ -127,7 +127,7 @@ const MyPostWidget = ({ picturePath }) => {
             color={mediumMain}
             sx={{ "&:hover": { cursor: "pointer", color: medium } }}
           >
-            Image
+            Image/Video
           </Typography>
         </FlexBetween>
 

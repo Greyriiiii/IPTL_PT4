@@ -6,6 +6,8 @@ import MyPostWidget from "scenes/widgets/MyPostWidget";
 import PostsWidget from "scenes/widgets/PostsWidget";
 import AdvertWidget from "scenes/widgets/AdvertWidget";
 import FriendListWidget from "scenes/widgets/FriendListWidget";
+import StoryWidget from "scenes/widgets/StoryWidget";
+
 
 const HomePage = () => {
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
@@ -27,7 +29,7 @@ const HomePage = () => {
         <Box
           flexBasis={isNonMobileScreens ? "42%" : undefined}
           mt={isNonMobileScreens ? undefined : "2rem"}
-        >
+        > <StoryWidget />
           <MyPostWidget picturePath={picturePath} />
           <PostsWidget userId={_id} />
         </Box>

@@ -4,10 +4,29 @@ import User from "../models/User.js";
 /* READ */
 export const getFeedPosts = async (req, res) => {
   try {
-    const posts = await Post.find().sort({ createdAt: -1 }); // Newest first
-    res.status(200).json(posts);
+    const posts = await Post.find().sort({ createdAt: -1 }).lean();
+
+    // Populate user details in comments
+    const updatedPosts = await Promise.all(
+      posts.map(async (post) => {
+        const populatedComments = await Promise.all(
+          post.comments.map(async (comment) => {
+            const user = await User.findById(comment.userId).select("firstName lastName picturePath");
+            return {
+              ...comment,
+              name: user ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : "Unknown User",
+              userPicturePath: user?.picturePath || null,
+            };
+          })
+        );
+
+        return { ...post, comments: populatedComments };
+      })
+    );
+
+    res.status(200).json(updatedPosts);
   } catch (err) {
-    res.status(404).json({ message: err.message });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
@@ -26,6 +45,11 @@ export const createPost = async (req, res) => {
   try {
     const { userId, description, picturePath } = req.body;
     const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
     const newPost = new Post({
       userId,
       firstName: user.firstName,
@@ -34,9 +58,10 @@ export const createPost = async (req, res) => {
       picturePath,
       likes: {},
       comments: [],
+      shares: 0,
     });
-    await newPost.save();
 
+    await newPost.save();
     const posts = await Post.find().sort({ createdAt: -1 }); // Return all posts sorted
     res.status(201).json(posts);
   } catch (err) {
@@ -50,6 +75,11 @@ export const likePost = async (req, res) => {
     const { id } = req.params;
     const { userId } = req.body;
     const post = await Post.findById(id);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found." });
+    }
+
     const isLiked = post.likes.get(userId);
 
     if (isLiked) {
@@ -69,7 +99,8 @@ export const likePost = async (req, res) => {
     res.status(404).json({ message: err.message });
   }
 };
-// controllers/posts.js
+
+/* INCREMENT SHARES */
 export const incrementShares = async (req, res) => {
   try {
     const { id } = req.params;
@@ -78,8 +109,40 @@ export const incrementShares = async (req, res) => {
       { $inc: { shares: 1 } },
       { new: true }
     );
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found." });
+    }
+
     res.status(200).json(post);
   } catch (err) {
     res.status(404).json({ message: err.message });
+  }
+};
+
+/* POST COMMENT */
+export const postComment = async (req, res) => {
+  try {
+    console.log("Request received:", req.params, req.body);
+
+    const { id } = req.params;
+    const { userId, text } = req.body;
+
+    if (!text) {
+      return res.status(400).json({ message: "Comment cannot be empty" });
+    }
+
+    const post = await Post.findById(id);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    post.comments.push({ userId, text });
+    await post.save();
+
+    res.status(200).json(post);
+  } catch (err) {
+    console.error("Error in postComment:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };

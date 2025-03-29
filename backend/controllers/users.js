@@ -64,31 +64,24 @@ export const addRemoveFriend = async (req, res) => {
   }
 };
 
-export const updateUserPicture = async (req, res) => {
+export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    
-    // Check if user is authorized
-    if (req.user.id !== id) {
-      return res.status(403).json({ message: "Unauthorized to update this profile" });
-    }
+    const { firstName, bio } = req.body; // Only update the name
 
-    // Check if file was uploaded
-    if (!req.file) {
-      return res.status(400).json({ message: "No image file provided" });
-    }
-
-    const picturePath = req.file.filename;
-    
-    // Update user in database
     const updatedUser = await User.findByIdAndUpdate(
       id,
-      { picturePath },
+      { firstName, bio }, // Only updating firstName
       { new: true }
     );
 
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     res.status(200).json(updatedUser);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("Error updating user:", err);
+    res.status(500).json({ message: "Failed to update user" });
   }
 };

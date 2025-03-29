@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -8,9 +8,11 @@ import {
   useTheme,
   Alert,
   Snackbar,
+  Checkbox,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import { InputAdornment, IconButton } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Formik } from "formik";
 import * as yup from "yup";
@@ -20,7 +22,7 @@ import { setLogin } from "state";
 import Dropzone from "react-dropzone";
 import FlexBetween from "components/FlexBetween";
 
-// Enhanced validation schemas
+// Validation schemas
 const registerSchema = yup.object().shape({
   firstName: yup.string().required("First name is required"),
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -55,6 +57,7 @@ const initialValuesRegister = {
 const initialValuesLogin = {
   email: "",
   password: "",
+  rememberMe: false,
 };
 
 const Form = () => {
@@ -65,19 +68,35 @@ const Form = () => {
   const isNonMobile = useMediaQuery("(min-width:600px)");
   const isLogin = pageType === "login";
   const isRegister = pageType === "register";
+  const [initialLoginValues, setInitialLoginValues] = useState(initialValuesLogin);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Alert states
   const [alert, setAlert] = useState({
     open: false,
     message: "",
-    severity: "success", // 'error', 'warning', 'info', 'success'
+    severity: "success",
   });
+
+  // Load saved credentials on component mount
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem("rememberedEmail");
+    const rememberedPassword = localStorage.getItem("rememberedPassword");
+    
+    if (rememberedEmail && rememberedPassword) {
+      setInitialLoginValues({
+        email: rememberedEmail,
+        password: rememberedPassword,
+        rememberMe: true,
+      });
+    }
+  }, []);
 
   const register = async (values, onSubmitProps) => {
     try {
       const formData = new FormData();
       for (let value in values) {
-        if (value !== "confirmPassword") { // Don't include confirmPassword in formData
+        if (value !== "confirmPassword") {
           formData.append(value, values[value]);
         }
       }
@@ -121,33 +140,40 @@ const Form = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
-  
+
       if (!loggedInResponse.ok) {
         const errorData = await loggedInResponse.json();
         throw new Error(errorData.message || "Login failed");
       }
-  
+
       const loggedIn = await loggedInResponse.json();
       onSubmitProps.resetForm();
-  
+
       dispatch(
         setLogin({
           user: loggedIn.user,
           token: loggedIn.token,
         })
       );
-  
-      // Show success alert
+
+      // Handle Remember Me functionality
+      if (values.rememberMe) {
+        localStorage.setItem("rememberedEmail", values.email);
+        localStorage.setItem("rememberedPassword", values.password);
+      } else {
+        localStorage.removeItem("rememberedEmail");
+        localStorage.removeItem("rememberedPassword");
+      }
+
       setAlert({
         open: true,
         message: "Successful login!",
         severity: "success",
       });
-  
-      // Navigate after showing the success message
+
       setTimeout(() => {
         navigate("/home");
-      }, 1500); // Delay navigation slightly for better user experience
+      }, 1500);
     } catch (error) {
       setAlert({
         open: true,
@@ -155,7 +181,7 @@ const Form = () => {
         severity: "error",
       });
     }
-  };  
+  };
 
   const handleFormSubmit = async (values, onSubmitProps) => {
     if (isLogin) await login(values, onSubmitProps);
@@ -165,10 +191,9 @@ const Form = () => {
   const handleCloseAlert = () => {
     setAlert({ ...alert, open: false });
   };
-  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <>
-      {/* Alert Snackbar */}
       <Snackbar
         open={alert.open}
         autoHideDuration={6000}
@@ -186,8 +211,9 @@ const Form = () => {
 
       <Formik
         onSubmit={handleFormSubmit}
-        initialValues={isLogin ? initialValuesLogin : initialValuesRegister}
+        initialValues={isLogin ? initialLoginValues : initialValuesRegister}
         validationSchema={isLogin ? loginSchema : registerSchema}
+        enableReinitialize
       >
         {({
           values,
@@ -211,7 +237,7 @@ const Form = () => {
               {isRegister && (
                 <>
                   <TextField
-                    label="First Name"
+                    label="Full Name"
                     onBlur={handleBlur}
                     onChange={handleChange}
                     value={values.firstName}
@@ -291,6 +317,35 @@ const Form = () => {
                 }}
               />
 
+{isLogin && (
+  <Box 
+    display="flex" 
+    justifyContent="space-between" 
+    alignItems="center" 
+    sx={{ gridColumn: "span 4" }}
+  >
+    <Box display="flex" alignItems="center">
+      <Checkbox
+        checked={values.rememberMe}
+        onChange={handleChange}
+        name="rememberMe"
+        color="primary"
+      />
+      <Typography>Remember me</Typography>
+    </Box>
+    <Button 
+      sx={{ 
+        textTransform: "none",
+        "&:hover": {
+          backgroundColor: "transparent",
+          textDecoration: "underline"
+        }
+      }}
+    >
+      Forgot Password?
+    </Button>
+  </Box>
+)}
               {isRegister && (
                 <TextField
                   label="Confirm Password"

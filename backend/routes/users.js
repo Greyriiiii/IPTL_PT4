@@ -1,9 +1,9 @@
 import express from "express";
-import {
-  getUser,
-  getUserFriends,
-  addRemoveFriend,
-  updateUserPicture,
+import { 
+  getUser, 
+  getUserFriends, 
+  addRemoveFriend, 
+  updateUser 
 } from "../controllers/users.js";
 import { verifyToken } from "../middleware/auth.js";
 import multer from "multer";
@@ -28,6 +28,6 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 /* UPDATE PROFILE PICTURE */
-router.patch("/:id/picture", verifyToken, upload.single("picture"), updateUserPicture);
+router.patch("/:id", verifyToken, updateUser);
 
 export default router;
